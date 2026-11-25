@@ -63,6 +63,9 @@ static class Program
         Store.MigrateOldData();
         Updater.CleanupOld();
         L.Load();
+        if (Array.IndexOf(args, "--uninstall") >= 0) { Installer.Uninstall(); return 0; }
+        if (Array.IndexOf(args, "--install") >= 0) { Installer.Install(null, false); return 0; }
+        Installer.RefreshRegistration();
 
         // Raccourci : SoulLauncher.exe --preset sans
         int i = Array.IndexOf(args, "--preset");
@@ -91,6 +94,7 @@ static class Program
                 using (OnboardingForm ob = new OnboardingForm(OnboardingForm.Mode.Full))
                     if (ob.ShowDialog() != DialogResult.OK) return 0;
             }
+            if (toImport == null && Installer.OfferAtStartup()) return 0; // la version installée prend le relais
             Application.Run(new MainForm(toImport));
         }
         catch (Exception ex) { Dlg.Show(ex.ToString(), AppName + " — " + L.S("erreur", "error")); return 1; }

@@ -18,7 +18,7 @@ class SettingsForm : Form
         FormBorderStyle = FormBorderStyle.FixedDialog;
         MaximizeBox = false; MinimizeBox = false;
         StartPosition = FormStartPosition.CenterParent;
-        ClientSize = new Size(460, 470);
+        ClientSize = new Size(460, 510);
         BackColor = Color.Black; ForeColor = Color.White;
         Icon = owner.Icon;
 
@@ -96,6 +96,14 @@ class SettingsForm : Form
         Button bData = Btn(L.S("Ouvrir le dossier de Soul Launcher", "Open Soul Launcher's folder"), 20, y, 410);
         bData.Click += delegate { Directory.CreateDirectory(Store.AppDir); Process.Start("explorer.exe", Store.AppDir); };
         Controls.Add(bData);
+        y += 36;
+        Button bInst = Btn(Installer.RunningInstalled ? L.S("Désinstaller Soul Launcher…", "Uninstall Soul Launcher…") : L.S("Installer sur ce PC (menu Démarrer, Bureau)", "Install on this PC (Start menu, Desktop)"), 20, y, 410);
+        bInst.Click += delegate
+        {
+            if (Installer.RunningInstalled) { if (Installer.Uninstall()) Environment.Exit(0); return; }
+            if (Installer.Install(this, true)) Application.Exit();
+        };
+        Controls.Add(bInst);
         y += 36;
         Button bBug = Btn(L.S("🐞 Signaler un bug / proposer une idée", "🐞 Report a bug / suggest an idea"), 20, y, 410);
         bBug.Click += delegate { Process.Start("https://github.com/" + Updater.Repo + "/issues/new"); };

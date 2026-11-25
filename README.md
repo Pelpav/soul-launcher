@@ -15,6 +15,8 @@ Lanceur de sauvegardes pour **UNDERTALE** (PC, v1.08) : choisis un point de dép
 
 ## Télécharger
 Dernière version : [Releases](../../releases/latest) → `SoulLauncher.exe`.
+Au premier lancement, Soul Launcher propose de **s'installer** (sans droits admin) : raccourcis menu Démarrer et Bureau, entrée dans « Applications installées » pour le désinstaller. Le fichier téléchargé peut ensuite être supprimé.
+
 Windows peut afficher « Windows a protégé votre ordinateur » (exe non signé) : **Informations complémentaires → Exécuter quand même**.
 
 ## Compiler
