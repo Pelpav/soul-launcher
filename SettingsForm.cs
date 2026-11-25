@@ -18,7 +18,7 @@ class SettingsForm : Form
         FormBorderStyle = FormBorderStyle.FixedDialog;
         MaximizeBox = false; MinimizeBox = false;
         StartPosition = FormStartPosition.CenterParent;
-        ClientSize = new Size(460, 430);
+        ClientSize = new Size(460, 470);
         BackColor = Color.Black; ForeColor = Color.White;
         Icon = owner.Icon;
 
@@ -96,6 +96,10 @@ class SettingsForm : Form
         Button bData = Btn(L.S("Ouvrir le dossier de Soul Launcher", "Open Soul Launcher's folder"), 20, y, 410);
         bData.Click += delegate { Directory.CreateDirectory(Store.AppDir); Process.Start("explorer.exe", Store.AppDir); };
         Controls.Add(bData);
+        y += 36;
+        Button bBug = Btn(L.S("🐞 Signaler un bug / proposer une idée", "🐞 Report a bug / suggest an idea"), 20, y, 410);
+        bBug.Click += delegate { Process.Start("https://github.com/" + Updater.Repo + "/issues/new"); };
+        Controls.Add(bBug);
     }
 
     void Head(string t, int y)

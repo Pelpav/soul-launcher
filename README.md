@@ -29,3 +29,6 @@ Windows suffit (csc.exe de .NET Framework 4.x) + Python 3 pour empaqueter les pa
 ```powershell
 .\release.ps1 1.0.1 "Ce qui change"
 ```
+
+## Licence
+Code sous licence MIT. Les saves de `packs/` restent à leurs auteurs (voir `packs/SOURCES.md`). Pour retirer une save, ouvre une issue.

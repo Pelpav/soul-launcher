@@ -63,7 +63,7 @@ class MainForm : Form
         // Liste des presets
         Controls.Add(Lbl(L.S("POINT DE DÉPART", "STARTING POINT"), 12, 52, true));
         lblCount = Lbl("", 180, 52); lblCount.AutoSize = false; lblCount.Size = new Size(122, 18); lblCount.TextAlign = ContentAlignment.TopRight; lblCount.ForeColor = Color.Gray; Controls.Add(lblCount);
-        txtSearch = new TextBox { Location = new Point(12, 74), Width = 290, BackColor = Color.FromArgb(25, 25, 25), ForeColor = Color.White, BorderStyle = BorderStyle.FixedSingle };
+        txtSearch = new TextBox { Location = new Point(12, 74), Width = 254, BackColor = Color.FromArgb(25, 25, 25), ForeColor = Color.White, BorderStyle = BorderStyle.FixedSingle };
         txtSearch.HandleCreated += delegate { SendMessage(txtSearch.Handle, 0x1501, (IntPtr)1, L.S("🔍 Rechercher (Sans, Mettaton, génocide…)", "🔍 Search (Sans, Mettaton, genocide…)")); };
         Timer searchTimer = new Timer { Interval = 150 };
         searchTimer.Tick += delegate { searchTimer.Stop(); ApplyFilter(null); };
@@ -76,6 +76,11 @@ class MainForm : Form
         txtSearch.Enter += delegate { AcceptButton = null; };
         txtSearch.Leave += delegate { AcceptButton = launchButton; };
         Controls.Add(txtSearch);
+        Button bRandom = Btn("🎲", 270, 73, 32, 23);
+        bRandom.Padding = Padding.Empty;
+        new ToolTip().SetToolTip(bRandom, L.S("Preset au hasard", "Random preset"));
+        bRandom.Click += delegate { PickRandom(); };
+        Controls.Add(bRandom);
         lstPresets = new ListBox { Location = new Point(12, 100), Size = new Size(290, 292), BackColor = Color.FromArgb(15, 15, 15), ForeColor = Color.White, BorderStyle = BorderStyle.FixedSingle, IntegralHeight = false, ItemHeight = 26, DrawMode = DrawMode.OwnerDrawFixed };
         lstPresets.DrawItem += DrawPresetItem;
         lstPresets.SelectedIndexChanged += delegate { OnPresetSelected(); };
@@ -378,6 +383,19 @@ class MainForm : Form
         }
         lastIndex = i;
         if (!suppressSelect) LoadPreset(presets[i]);
+    }
+
+    static readonly Random rng = new Random();
+
+    // Choisit un preset au hasard parmi ceux affichés (respecte la recherche)
+    void PickRandom()
+    {
+        var idx = Enumerable.Range(0, presets.Count).Where(i => !presets[i].IsHeader).ToList();
+        if (idx.Count == 0) return;
+        int pick = idx[rng.Next(idx.Count)];
+        if (idx.Count > 1 && pick == lstPresets.SelectedIndex) pick = idx[(idx.IndexOf(pick) + 1) % idx.Count];
+        lstPresets.SelectedIndex = pick;
+        lstPresets.Focus();
     }
 
     void UpdateFavButton()
