@@ -183,6 +183,10 @@ class MainForm : Form
         Button bOpen = Btn(L.S("Ouvrir le dossier des saves", "Open the save folder"), 322, 540, 200, 28);
         bOpen.Click += delegate { Directory.CreateDirectory(Store.SaveDir); Process.Start("explorer.exe", Store.SaveDir); };
         Controls.Add(bOpen);
+        Button bContinue = Btn("▶  " + L.S("Continuer ma partie (sans preset)", "Continue my game (no preset)"), 904, 540, 264, 28);
+        bContinue.FlatAppearance.BorderColor = Yellow;
+        bContinue.Click += delegate { ContinueGame(); };
+        Controls.Add(bContinue);
         Button bShortcut = Btn(L.S("Raccourci menu Démarrer", "Start menu shortcut"), 530, 540, 240, 28);
         bShortcut.Click += delegate { MakeShortcut(); };
         Controls.Add(bShortcut);
@@ -549,6 +553,20 @@ class MainForm : Form
             lblInfo.Text = L.S("Sauvegarde écrite — choisis « Continuer » dans le jeu.", "Save written — pick \"Continue\" in the game.");
             string k = current.Key;
             ReloadPresets(k);
+            WindowState = FormWindowState.Minimized;
+        }
+        catch (Exception ex) { Dlg.Show(this, ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Warning); }
+    }
+
+    void ContinueGame()
+    {
+        string exe = txtGame.Text;
+        if (!File.Exists(exe)) { DetectGame(true); exe = txtGame.Text; if (!File.Exists(exe)) return; }
+        if (!Store.HasSave()) { Dlg.Show(this, L.S("Aucune partie à continuer : choisis un preset puis « Lancer ».", "No game to continue: pick a preset, then \"Start\"."), Text); return; }
+        try
+        {
+            if (!Store.ContinueGame(exe, this)) return;
+            lblInfo.Text = L.S("Jeu lancé avec ta partie telle quelle.", "Game started with your save as it is.");
             WindowState = FormWindowState.Minimized;
         }
         catch (Exception ex) { Dlg.Show(this, ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Warning); }

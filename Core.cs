@@ -395,7 +395,7 @@ static class Store
         s.Lines = SaveState.Normalize(File.ReadAllLines(f0, Utf8));
         string ini = Path.Combine(SaveDir, "undertale.ini");
         s.Ini = File.Exists(ini) ? SaveState.ParseIni(File.ReadAllText(ini, Utf8)) : new List<KeyValuePair<string, List<KeyValuePair<string, string>>>>();
-        writtenByLauncher = GetSetting("lastWritten") == Hash(f0);
+        writtenByLauncher = !Progressed();
         return s;
     }
 
@@ -460,13 +460,33 @@ static class Store
         using (var sha = SHA256.Create()) return Convert.ToBase64String(sha.ComputeHash(File.ReadAllBytes(file)));
     }
 
+    // Empreinte de toute la partie : file0 (save), file8 (combat contre Flowey) et undertale.ini
+    public static string SaveHash()
+    {
+        return Hash(Path.Combine(SaveDir, "file0")) + "|" + Hash(Path.Combine(SaveDir, "file8")) + "|" + Hash(Path.Combine(SaveDir, "undertale.ini"));
+    }
+
+    public static bool HasSave() { return File.Exists(Path.Combine(SaveDir, "file0")) || File.Exists(Path.Combine(SaveDir, "file8")); }
+
+    // true = le jeu a modifié la partie depuis que Soul Launcher l'a écrite (ou partie jamais écrite par lui)
+    public static bool Progressed()
+    {
+        if (!HasSave()) return false;
+        string last = GetSetting("lastSave");
+        if (string.IsNullOrEmpty(last))
+        {
+            // Anciennes versions : seule l'empreinte de file0 était gardée
+            string old = GetSetting("lastWritten");
+            return string.IsNullOrEmpty(old) || old != Hash(Path.Combine(SaveDir, "file0"));
+        }
+        return last != SaveHash();
+    }
+
     // ---- Copies de sécurité ----
     public static string BackupIfNeeded()
     {
-        if (!Directory.Exists(SaveDir) || Directory.GetFiles(SaveDir).Length == 0) return null;
-        string cur = Hash(Path.Combine(SaveDir, "file0"));
-        if (cur != "" && GetSetting("lastWritten") == cur) return null;
-        if (cur == "" && !File.Exists(Path.Combine(SaveDir, "undertale.ini"))) return null;
+        if (!Directory.Exists(SaveDir) || !HasSave()) return null;
+        if (!Progressed()) return null;
         string dest = Path.Combine(BackupDir, DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss"));
         Directory.CreateDirectory(dest);
         foreach (string f in Directory.GetFiles(SaveDir)) File.Copy(f, Path.Combine(dest, Path.GetFileName(f)), true);
@@ -490,7 +510,7 @@ static class Store
             if (File.Exists(p)) File.Delete(p);
         }
         foreach (string f in Directory.GetFiles(dir)) File.Copy(f, Path.Combine(SaveDir, Path.GetFileName(f)), true);
-        SetSetting("lastWritten", "");
+        SetSetting("lastWritten", ""); SetSetting("lastSave", "");
     }
 
     public static bool GameRunning()
@@ -600,21 +620,46 @@ static class Store
         string f8 = Path.Combine(SaveDir, "file8");
         if (File.Exists(f8)) File.Delete(f8);
         File.WriteAllText(Path.Combine(SaveDir, "undertale.ini"), st.IniText(), Utf8);
-        SetSetting("lastWritten", Hash(Path.Combine(SaveDir, "file0")));
+        SetSetting("lastSave", SaveHash());
     }
 
     public static bool WriteAndLaunch(SaveState st, string exe, IWin32Window owner)
     {
         if (GameRunning()) throw new Exception(L.S("UNDERTALE est déjà lancé. Ferme-le d'abord, sinon il écrasera la sauvegarde.", "UNDERTALE is already running. Close it first, or it will overwrite the save."));
         if (!CheckCloud(owner)) return false;
+        // La partie a avancé depuis (ex. Flowey qui ferme le jeu exprès) : on demande avant d'écraser
+        if (Progressed())
+        {
+            DialogResult r = Dlg.Show(owner,
+                L.S("Ta partie a avancé depuis le dernier lancement (par exemple Flowey qui ferme le jeu exprès pendant son combat).\n\nTu veux la continuer, ou repartir du preset choisi ? Si tu repars du preset, ta partie est d'abord copiée (bouton « Restaurer ma vraie sauvegarde »).",
+                    "Your game has moved on since the last launch (for example Flowey closing the game on purpose during his fight).\n\nContinue it, or start over from the chosen preset? If you start over, your game is copied first (\"Restore my real save\" button)."),
+                L.S("Partie en cours", "Game in progress"), MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question,
+                new[] { L.S("Continuer ma partie", "Continue my game"), L.S("Repartir du preset", "Use the preset"), L.S("Annuler", "Cancel") });
+            if (r == DialogResult.Cancel) return false;
+            if (r == DialogResult.Yes) { StartGame(exe); return true; }
+        }
         WriteSave(st);
         if (!string.IsNullOrEmpty(st.Key)) AddRecent(st.Key);
+        StartGame(exe);
+        return true;
+    }
+
+    // Lance le jeu sans toucher à la sauvegarde
+    public static bool ContinueGame(string exe, IWin32Window owner)
+    {
+        if (GameRunning()) throw new Exception(L.S("UNDERTALE est déjà lancé.", "UNDERTALE is already running."));
+        if (!CheckCloud(owner)) return false;
+        StartGame(exe);
+        return true;
+    }
+
+    static void StartGame(string exe)
+    {
         ProcessStartInfo psi = new ProcessStartInfo(exe);
         psi.WorkingDirectory = Path.GetDirectoryName(exe);
         psi.UseShellExecute = false;
         Process game = Process.Start(psi);
         if (Fullscreen && game != null) GoFullscreen(game);
-        return true;
     }
 
     [DllImport("user32.dll")] static extern bool SetForegroundWindow(IntPtr h);
