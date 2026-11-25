@@ -1,0 +1,5 @@
+*.exe
+*.exe.sha256
+packs.zip
+_old/
+__pycache__/
