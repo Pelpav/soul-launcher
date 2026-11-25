@@ -19,8 +19,8 @@ using Microsoft.Win32;
 [assembly: AssemblyTitle("Soul Launcher")]
 [assembly: AssemblyProduct("Soul Launcher")]
 [assembly: AssemblyDescription("Lanceur de sauvegardes UNDERTALE fait par un fan (non officiel)")]
-[assembly: AssemblyVersion("1.0.2.0")]
-[assembly: AssemblyFileVersion("1.0.2.0")]
+[assembly: AssemblyVersion("1.0.3.0")]
+[assembly: AssemblyFileVersion("1.0.3.0")]
 
 // ---------- Langue ----------
 static class L
