@@ -96,12 +96,12 @@ static class Updater
     public static void Offer(Form owner, UpdateInfo u, bool atStartup)
     {
         string notes = string.IsNullOrEmpty(u.Notes) ? "" : "\n\n" + (u.Notes.Length > 600 ? u.Notes.Substring(0, 600) + "…" : u.Notes);
-        DialogResult r = MessageBox.Show(owner,
+        DialogResult r = Dlg.Show(owner,
             L.S("Une nouvelle version de Soul Launcher est disponible : ", "A new version of Soul Launcher is available: ") + u.Version +
             L.S(" (tu as la ", " (you have ") + CurrentText + ")." + notes + "\n\n" +
-            L.S("La télécharger et l'installer maintenant ?", "Download and install it now?") +
-            (atStartup ? L.S("\n\n(Non = plus tard, Annuler = ignorer cette version)", "\n\n(No = later, Cancel = skip this version)") : ""),
-            Program.AppName, atStartup ? MessageBoxButtons.YesNoCancel : MessageBoxButtons.YesNo, MessageBoxIcon.Information);
+            L.S("La télécharger et l'installer maintenant ?", "Download and install it now?"),
+            L.S("Mise à jour", "Update"), atStartup ? MessageBoxButtons.YesNoCancel : MessageBoxButtons.YesNo, MessageBoxIcon.Information,
+            atStartup ? new[] { L.S("Installer", "Install"), L.S("Plus tard", "Later"), L.S("Ignorer", "Skip") } : new[] { L.S("Installer", "Install"), L.S("Plus tard", "Later") });
         if (r == DialogResult.Cancel) { Store.SetSetting("skipVersion", u.Version); return; }
         if (r != DialogResult.Yes) return;
         if (u.ExeUrl == null) { Process.Start(u.PageUrl); return; }
@@ -198,7 +198,7 @@ class UpdateForm : Form
     void Fail(string msg)
     {
         try { if (File.Exists(tmp)) File.Delete(tmp); } catch { }
-        if (MessageBox.Show(this,
+        if (Dlg.Show(this,
             L.S("La mise à jour automatique a échoué : ", "The automatic update failed: ") + msg + "\n\n" +
             L.S("Si Soul Launcher est dans Documents ou sur le Bureau, Windows (protection contre les ransomwares) peut l'empêcher de se remplacer. Ouvrir la page de téléchargement pour le faire à la main ?",
                 "If Soul Launcher is in Documents or on the Desktop, Windows (ransomware protection) may block it from replacing itself. Open the download page to do it by hand?"),

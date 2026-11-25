@@ -32,7 +32,7 @@ class SettingsForm : Form
             bool en = cboLang.SelectedIndex == 1;
             if (en == L.En) return;
             Store.SetSetting("lang", en ? "en" : "fr");
-            if (MessageBox.Show(this, en ? "Restart Soul Launcher now to switch to English?" : "Redémarrer Soul Launcher maintenant pour passer en français ?", Program.AppName, MessageBoxButtons.YesNo) == DialogResult.Yes)
+            if (Dlg.Show(this, en ? "Restart Soul Launcher now to switch to English?" : "Redémarrer Soul Launcher maintenant pour passer en français ?", Program.AppName, MessageBoxButtons.YesNo) == DialogResult.Yes)
                 Application.Restart();
         };
         Controls.Add(cboLang);
@@ -60,7 +60,7 @@ class SettingsForm : Form
                 SoulFile.RegisterAssociation();
                 bAssoc.Text = L.S("✓ Les .soul s'ouvrent avec Soul Launcher", "✓ .soul files open with Soul Launcher");
             }
-            catch (Exception ex) { MessageBox.Show(this, ex.Message, Program.AppName); }
+            catch (Exception ex) { Dlg.Show(this, ex.Message, Program.AppName); }
         };
         Controls.Add(bAssoc);
         y += 44;
@@ -81,10 +81,10 @@ class SettingsForm : Form
             {
                 UpdateInfo u = Updater.Check(10000);
                 Cursor = Cursors.Default;
-                if (u == null) MessageBox.Show(this, L.S("Tu as la dernière version (", "You have the latest version (") + Updater.CurrentText + ").", Program.AppName);
+                if (u == null) Dlg.Show(this, L.S("Tu as la dernière version (", "You have the latest version (") + Updater.CurrentText + ").", Program.AppName);
                 else Updater.Offer(this, u, false);
             }
-            catch (Exception ex) { Cursor = Cursors.Default; MessageBox.Show(this, L.S("Impossible de vérifier (connexion ?) : ", "Couldn't check (connection?): ") + ex.Message, Program.AppName); }
+            catch (Exception ex) { Cursor = Cursors.Default; Dlg.Show(this, L.S("Impossible de vérifier (connexion ?) : ", "Couldn't check (connection?): ") + ex.Message, Program.AppName); }
         };
         Controls.Add(bCheck);
         Button bPage = Btn(L.S("Page du projet", "Project page"), 230, y, 200);

@@ -71,15 +71,15 @@ static class Program
             try
             {
                 SaveState st = Store.FindPreset(args[i + 1]);
-                if (st == null) { MessageBox.Show(L.S("Preset introuvable : ", "Preset not found: ") + args[i + 1], AppName); return 1; }
+                if (st == null) { Dlg.Show(L.S("Preset introuvable : ", "Preset not found: ") + args[i + 1], AppName); return 1; }
                 if (Array.IndexOf(args, "--no-launch") >= 0) { Store.WriteSave(st); return 0; }
                 Store.Fullscreen = Store.GetSetting("fullscreen") == "1";
                 string exe = GameFinder.Resolve();
-                if (exe == null) { MessageBox.Show(L.S("UNDERTALE introuvable. Ouvre Soul Launcher sans argument pour choisir le jeu.", "UNDERTALE not found. Open Soul Launcher without arguments to pick the game."), AppName); return 1; }
+                if (exe == null) { Dlg.Show(L.S("UNDERTALE introuvable. Ouvre Soul Launcher sans argument pour choisir le jeu.", "UNDERTALE not found. Open Soul Launcher without arguments to pick the game."), AppName); return 1; }
                 Store.WriteAndLaunch(st, exe, null);
                 return 0;
             }
-            catch (Exception ex) { MessageBox.Show(ex.Message, AppName); return 1; }
+            catch (Exception ex) { Dlg.Show(ex.Message, AppName); return 1; }
         }
 
         // Double-clic sur un fichier .soul (ou glissé sur l'exe)
@@ -93,7 +93,7 @@ static class Program
             }
             Application.Run(new MainForm(toImport));
         }
-        catch (Exception ex) { MessageBox.Show(ex.ToString(), AppName + " — " + L.S("erreur", "error")); return 1; }
+        catch (Exception ex) { Dlg.Show(ex.ToString(), AppName + " — " + L.S("erreur", "error")); return 1; }
         return 0;
     }
 }
@@ -569,7 +569,7 @@ static class Store
                 if (File.Exists(Path.Combine(d, n))) stuck = Path.Combine(d, n);
         if (stuck != null)
         {
-            MessageBox.Show(owner,
+            Dlg.Show(owner,
                 L.S("Le Steam Cloud garde la fin génocide et la remet à chaque démarrage (écran noir).\n\nWindows empêche Soul Launcher de supprimer ce fichier :\n",
                     "Steam Cloud keeps the genocide ending and puts it back on every start (black screen).\n\nWindows blocks Soul Launcher from deleting this file:\n") + stuck + "\n\n" +
                 L.S("Le dossier va s'ouvrir : supprime ce fichier à la main (une copie est déjà sauvegardée), puis relance. C'est à faire une seule fois.",
@@ -581,7 +581,7 @@ static class Store
         if (hadSteam && GetSetting("steamCloudTip") != "1")
         {
             SetSetting("steamCloudTip", "1");
-            MessageBox.Show(owner,
+            Dlg.Show(owner,
                 L.S("La fin génocide était aussi dans ton Steam Cloud : Soul Launcher l'a retirée (copie gardée).\n\nSi l'écran noir revient quand même, c'est que Steam la retélécharge : dans Steam, clic droit sur UNDERTALE → Propriétés → Général → décoche « Conserver les sauvegardes dans Steam Cloud », puis relance depuis Soul Launcher.",
                     "The genocide ending was also in your Steam Cloud: Soul Launcher removed it (copy kept).\n\nIf the black screen still comes back, Steam is downloading it again: in Steam, right-click UNDERTALE → Properties → General → untick \"Keep games saves in the Steam Cloud\", then launch again from Soul Launcher."),
                 Program.AppName, MessageBoxButtons.OK, MessageBoxIcon.Information);

@@ -497,7 +497,7 @@ class MainForm : Form
         finally { Cursor = Cursors.Default; }
         if (found.Count == 0)
         {
-            MessageBox.Show(this, L.S("UNDERTALE n'a pas été trouvé (Steam, GOG, Xbox, dossiers habituels).\nIndique UNDERTALE.exe avec « Parcourir… ».", "UNDERTALE was not found (Steam, GOG, Xbox, usual folders).\nPick UNDERTALE.exe with \"Browse…\"."), Text);
+            Dlg.Show(this, L.S("UNDERTALE n'a pas été trouvé (Steam, GOG, Xbox, dossiers habituels).\nIndique UNDERTALE.exe avec « Parcourir… ».", "UNDERTALE was not found (Steam, GOG, Xbox, usual folders).\nPick UNDERTALE.exe with \"Browse…\"."), Text);
             BrowseGame();
             return;
         }
@@ -530,7 +530,7 @@ class MainForm : Form
         {
             if (File.Exists(txtGame.Text)) d.InitialDirectory = Path.GetDirectoryName(txtGame.Text);
             if (d.ShowDialog(this) != DialogResult.OK) return;
-            if (!GameFinder.IsGame(d.FileName) && MessageBox.Show(this, L.S("Ce fichier ne ressemble pas à UNDERTALE (pas de data.win à côté). L'utiliser quand même ?", "This doesn't look like UNDERTALE (no data.win next to it). Use it anyway?"), Text, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes) return;
+            if (!GameFinder.IsGame(d.FileName) && Dlg.Show(this, L.S("Ce fichier ne ressemble pas à UNDERTALE (pas de data.win à côté). L'utiliser quand même ?", "This doesn't look like UNDERTALE (no data.win next to it). Use it anyway?"), Text, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) != DialogResult.Yes) return;
             txtGame.Text = d.FileName;
             Store.SetSetting("game", d.FileName);
         }
@@ -551,7 +551,7 @@ class MainForm : Form
             ReloadPresets(k);
             WindowState = FormWindowState.Minimized;
         }
-        catch (Exception ex) { MessageBox.Show(this, ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Warning); }
+        catch (Exception ex) { Dlg.Show(this, ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Warning); }
     }
 
     // ---------- Saves perso et partage ----------
@@ -568,7 +568,7 @@ class MainForm : Form
             string n = Store.SafeName(t.Text);
             if (n.Length == 0) return null;
             if (File.Exists(Path.Combine(Store.CustomDir, n + ".file0")) &&
-                MessageBox.Show(this, L.S("« ", "\"") + n + L.S(" » existe déjà. Le remplacer ?", "\" already exists. Replace it?"), Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                Dlg.Show(this, L.S("« ", "\"") + n + L.S(" » existe déjà. Le remplacer ?", "\" already exists. Replace it?"), Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
                 return null;
             return n;
         }
@@ -580,12 +580,12 @@ class MainForm : Form
         SaveState s = Store.ReadCurrentGame(out mine);
         if (s == null)
         {
-            MessageBox.Show(this, L.S("Aucune partie trouvée dans ", "No game found in ") + Store.SaveDir + L.S(".\nJoue, sauvegarde à une étoile jaune, ferme le jeu, puis réessaie.", ".\nPlay, save at a yellow star, close the game, then try again."), Text);
+            Dlg.Show(this, L.S("Aucune partie trouvée dans ", "No game found in ") + Store.SaveDir + L.S(".\nJoue, sauvegarde à une étoile jaune, ferme le jeu, puis réessaie.", ".\nPlay, save at a yellow star, close the game, then try again."), Text);
             return;
         }
         if (Store.GameRunning())
-            MessageBox.Show(this, L.S("UNDERTALE est ouvert : l'import prend la dernière sauvegarde faite à une étoile jaune.", "UNDERTALE is open: the import takes the last save made at a yellow star."), Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
-        if (mine && MessageBox.Show(this, L.S("Cette save est celle que Soul Launcher a écrite, pas une partie jouée depuis.\nL'importer quand même ?", "This is the save Soul Launcher wrote, not a game played since.\nImport it anyway?"), Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            Dlg.Show(this, L.S("UNDERTALE est ouvert : l'import prend la dernière sauvegarde faite à une étoile jaune.", "UNDERTALE is open: the import takes the last save made at a yellow star."), Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
+        if (mine && Dlg.Show(this, L.S("Cette save est celle que Soul Launcher a écrite, pas une partie jouée depuis.\nL'importer quand même ?", "This is the save Soul Launcher wrote, not a game played since.\nImport it anyway?"), Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
             return;
         string n = AskName(L.S("Nom de ta save", "Name your save"), s.Lines[0] + " LV" + s.Get(2) + " · " + s.RoomName());
         if (n == null) return;
@@ -609,9 +609,9 @@ class MainForm : Form
 
     void DeleteCustom()
     {
-        if (current == null || !current.Custom) { MessageBox.Show(this, L.S("Sélectionne une de tes saves (section « Mes saves »).", "Select one of your saves (\"My saves\" section)."), Text); return; }
+        if (current == null || !current.Custom) { Dlg.Show(this, L.S("Sélectionne une de tes saves (section « Mes saves »).", "Select one of your saves (\"My saves\" section)."), Text); return; }
         string n = current.Key.Substring(6);
-        if (MessageBox.Show(this, L.S("Supprimer « ", "Delete \"") + n + L.S(" » ?", "\"?"), Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+        if (Dlg.Show(this, L.S("Supprimer « ", "Delete \"") + n + L.S(" » ?", "\"?"), Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
         Store.DeleteCustom(n);
         current = null;
         ReloadPresets(null);
@@ -634,8 +634,8 @@ class MainForm : Form
                 Process.Start("explorer.exe", "/select,\"" + d.FileName + "\"");
                 lblInfo.Text = L.S("Fichier prêt à envoyer (Discord, WhatsApp…) : ", "File ready to send (Discord, WhatsApp…): ") + d.FileName;
             }
-            catch (UnauthorizedAccessException) { MessageBox.Show(this, L.S("Windows bloque l'écriture ici (protection des dossiers). Enregistre plutôt dans Téléchargements.", "Windows blocks writing here (folder protection). Save to Downloads instead."), Text, MessageBoxButtons.OK, MessageBoxIcon.Warning); }
-            catch (Exception ex) { MessageBox.Show(this, ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Warning); }
+            catch (UnauthorizedAccessException) { Dlg.Show(this, L.S("Windows bloque l'écriture ici (protection des dossiers). Enregistre plutôt dans Téléchargements.", "Windows blocks writing here (folder protection). Save to Downloads instead."), Text, MessageBoxButtons.OK, MessageBoxIcon.Warning); }
+            catch (Exception ex) { Dlg.Show(this, ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Warning); }
         }
     }
 
@@ -660,7 +660,7 @@ class MainForm : Form
             ReloadPresets("perso:" + n);
             lblInfo.Text = L.S("Save ajoutée à « Mes saves » : ", "Save added to \"My saves\": ") + n;
         }
-        catch (Exception ex) { MessageBox.Show(this, Path.GetFileName(path) + " : " + ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Warning); }
+        catch (Exception ex) { Dlg.Show(this, Path.GetFileName(path) + " : " + ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Warning); }
     }
 
     void Restore()
@@ -668,15 +668,15 @@ class MainForm : Form
         string b = Store.LatestBackup();
         if (b == null)
         {
-            if (!Store.HasGenocideBackup()) { MessageBox.Show(this, L.S("Rien à restaurer : Soul Launcher n'a encore rien remplacé.", "Nothing to restore: Soul Launcher hasn't replaced anything yet."), Text); return; }
-            if (MessageBox.Show(this, L.S("Pas d'ancienne save, mais la fin génocide a été mise de côté.\nRemettre le monde effacé (écran noir au prochain démarrage) ?", "No old save, but the genocide ending was set aside.\nPut the erased world back (black screen on next start)?"), Text, MessageBoxButtons.YesNo) != DialogResult.Yes) return;
+            if (!Store.HasGenocideBackup()) { Dlg.Show(this, L.S("Rien à restaurer : Soul Launcher n'a encore rien remplacé.", "Nothing to restore: Soul Launcher hasn't replaced anything yet."), Text); return; }
+            if (Dlg.Show(this, L.S("Pas d'ancienne save, mais la fin génocide a été mise de côté.\nRemettre le monde effacé (écran noir au prochain démarrage) ?", "No old save, but the genocide ending was set aside.\nPut the erased world back (black screen on next start)?"), Text, MessageBoxButtons.YesNo) != DialogResult.Yes) return;
             foreach (string n in new[] { "file0", "file9", "undertale.ini" }) { string p = Path.Combine(Store.SaveDir, n); if (File.Exists(p)) File.Delete(p); }
             Store.RestoreGenocide();
             lblInfo.Text = L.S("Fin génocide restaurée.", "Genocide ending restored.");
             return;
         }
-        if (Store.GameRunning()) { MessageBox.Show(this, L.S("Ferme UNDERTALE d'abord.", "Close UNDERTALE first."), Text); return; }
-        if (MessageBox.Show(this, L.S("Remettre la sauvegarde du ", "Restore the save from ") + Path.GetFileName(b).Replace("_", " ") + " ?", Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+        if (Store.GameRunning()) { Dlg.Show(this, L.S("Ferme UNDERTALE d'abord.", "Close UNDERTALE first."), Text); return; }
+        if (Dlg.Show(this, L.S("Remettre la sauvegarde du ", "Restore the save from ") + Path.GetFileName(b).Replace("_", " ") + " ?", Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
         Store.RestoreBackup(b);
         Store.RestoreGenocide();
         lblInfo.Text = L.S("Sauvegarde restaurée depuis ", "Save restored from ") + b;
